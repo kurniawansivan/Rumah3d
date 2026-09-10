@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { lotStepSchema } from "@rumah3d/schemas";
 import type { CompassDirection, LotPosition, LotStep } from "@rumah3d/schemas";
 
+import { WizardStepIndicator } from "@/components/wizard/WizardStepIndicator";
 import { useWizardStore } from "@/lib/wizard/store";
 
 // TODO(shadcn/ui): this form is hand-written with plain semantic HTML +
@@ -41,6 +42,7 @@ const POSITION_OPTIONS: Array<{ value: LotPosition; label: string }> = [
 
 export default function LotStepPage() {
   const router = useRouter();
+  const brief = useWizardStore((state) => state.brief);
   const setLot = useWizardStore((state) => state.setLot);
 
   const {
@@ -49,14 +51,16 @@ export default function LotStepPage() {
     formState: { errors, isSubmitting },
   } = useForm<LotStep>({
     resolver: zodResolver(lotStepSchema),
-    // Only fields with a genuine default are listed — `defaultValues` is a
-    // deep-partial, so `length_m`/`width_m`/the setback fields are simply
-    // omitted and render as blank, uncontrolled inputs until the user (or
-    // this page's error state) fills them in.
+    // Seeded from the store so revisiting this step via a "Ubah" link (or
+    // browser back) shows what was already entered, not a blank form —
+    // length_m/width_m still render blank on a genuinely fresh visit,
+    // same as before.
     defaultValues: {
       lot: {
-        facing: "utara" as CompassDirection,
-        position: "tengah" as LotPosition,
+        length_m: brief.lot?.length_m,
+        width_m: brief.lot?.width_m,
+        facing: brief.lot?.facing ?? ("utara" as CompassDirection),
+        position: brief.lot?.position ?? ("tengah" as LotPosition),
       },
     },
   });
@@ -72,9 +76,7 @@ export default function LotStepPage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-8 px-6 py-16">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Langkah 1 dari 5
-        </p>
+        <WizardStepIndicator current={1} />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           Data Lahan
         </h1>

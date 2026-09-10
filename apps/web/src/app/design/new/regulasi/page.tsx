@@ -7,20 +7,18 @@ import { useForm } from "react-hook-form";
 import { regulasiStepSchema } from "@rumah3d/schemas";
 import type { RegulasiStep, Setbacks } from "@rumah3d/schemas";
 
+import { WizardStepIndicator } from "@/components/wizard/WizardStepIndicator";
 import { useWizardStore } from "@/lib/wizard/store";
 
 // TODO(shadcn/ui): see the same note in ../lot/page.tsx — plain HTML/
 // Tailwind until shadcn/ui's CLI can run again.
-//
-// TODO(RM-3/RM-4): navigates to /design/new/program (step 3) once
-// submitted. Step 4 (gaya & prioritas) doesn't exist yet — program's own
-// submit goes straight to preview until RM-3 lands.
 //
 // `useForm<RegulasiStep>` explicit for the same reason as the lot step:
 // letting it infer from `defaultValues` alone silently narrows the type.
 
 export default function RegulasiStepPage() {
   const router = useRouter();
+  const brief = useWizardStore((state) => state.brief);
   const setRegulasi = useWizardStore((state) => state.setRegulasi);
 
   const {
@@ -29,8 +27,15 @@ export default function RegulasiStepPage() {
     formState: { errors, isSubmitting },
   } = useForm<RegulasiStep>({
     resolver: zodResolver(regulasiStepSchema),
+    // Seeded from the store (see the same note in ../lot/page.tsx) —
+    // gsb_samping_m is read back from setbacks.left_m, the one side this
+    // step's own submit always mirrors into both left_m and right_m.
     defaultValues: {
-      kdb_percent: 60,
+      gsb_depan_m: brief.setbacks?.front_m,
+      gsb_samping_m: brief.setbacks?.left_m,
+      gsb_belakang_m: brief.setbacks?.back_m,
+      kdb_percent: brief.kdb_percent ?? 60,
+      klb_percent: brief.klb_percent,
     },
   });
 
@@ -61,9 +66,7 @@ export default function RegulasiStepPage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-8 px-6 py-16">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Langkah 2 dari 5
-        </p>
+        <WizardStepIndicator current={2} />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           Batasan Regulasi
         </h1>

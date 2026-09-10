@@ -85,8 +85,24 @@ skill.
       owns the actual generate call, unchanged — review's submit just
       navigates there. Verified live end to end through the full 5 steps
       from `/`. Ref: same doc, Step 5.
-- [ ] **RM-5** — Shared wizard shell: "step N of 5" indicator, back/forward
-      without losing later-step answers. Ref: same doc, "Wizard mechanics".
+- [x] **RM-5** — Shared wizard shell. `WizardStepIndicator` replaces the 5
+      duplicated `<p>Langkah N dari 5</p>` lines and makes each
+      already-completed step clickable (PRD: "lets a user jump back to any
+      already-completed step") — completeness derived from key-presence in
+      the store, not a separate tracked flag. Also fixed the gap flagged
+      in RM-4: revisiting a step via "Ubah" now pre-fills the form from
+      the store instead of resetting to schema defaults, for all 4 form
+      steps — straightforward for lot/regulasi/gaya (their stored shape
+      already matches the form 1:1 or close to it), needed a real inverse
+      function (`deriveProgramRuangStepFromBrief`, packages/schemas,
+      round-trip tested) for program ruang since its 17 fields don't map
+      1:1 onto the stored `room_program`. Verified live: filled all 4
+      steps with non-default values (facing=selatan, GSB samping=2.5,
+      parkir=garasi, dapur=bersih_dan_kotor, mushola on), jumped back via
+      the indicator, confirmed every field — including ones the `find`
+      tool itself initially misreported from a stale snapshot, caught by
+      checking the actual DOM/store directly instead of trusting it — came
+      back exactly as entered. Ref: same doc, "Wizard mechanics".
 
 **DoD per ticket:** step's Zod slice already exists (confirm, don't
 redefine) → form built against it → BFF forwards the real values instead

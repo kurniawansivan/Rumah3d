@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { gayaStepSchema } from "@rumah3d/schemas";
 import type { GayaStep } from "@rumah3d/schemas";
 
+import { WizardStepIndicator } from "@/components/wizard/WizardStepIndicator";
 import { useWizardStore } from "@/lib/wizard/store";
 
 // TODO(shadcn/ui): see the same note in ../lot/page.tsx.
@@ -25,6 +26,7 @@ const PRIORITAS_OPTIONS = [
 
 export default function GayaStepPage() {
   const router = useRouter();
+  const brief = useWizardStore((state) => state.brief);
   const setGaya = useWizardStore((state) => state.setGaya);
 
   const {
@@ -33,9 +35,10 @@ export default function GayaStepPage() {
     formState: { isSubmitting },
   } = useForm<GayaStep>({
     resolver: zodResolver(gayaStepSchema),
+    // Seeded from the store (see the same note in ../lot/page.tsx).
     defaultValues: {
-      style: "minimalis_modern",
-      prioritas_saat_tidak_muat: "kamar",
+      style: brief.style ?? "minimalis_modern",
+      prioritas_saat_tidak_muat: brief.prioritas_saat_tidak_muat ?? "kamar",
     },
   });
 
@@ -48,9 +51,7 @@ export default function GayaStepPage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-8 px-6 py-16">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Langkah 4 dari 5
-        </p>
+        <WizardStepIndicator current={4} />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           Gaya & Prioritas
         </h1>

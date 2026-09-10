@@ -5,16 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-import { buildRoomProgramFromStep3, programRuangStepSchema } from "@rumah3d/schemas";
+import {
+  buildRoomProgramFromStep3,
+  deriveProgramRuangStepFromBrief,
+  programRuangStepSchema,
+} from "@rumah3d/schemas";
 import type { ProgramRuangStep } from "@rumah3d/schemas";
 
+import { WizardStepIndicator } from "@/components/wizard/WizardStepIndicator";
 import { useWizardStore } from "@/lib/wizard/store";
 
 // TODO(shadcn/ui): see the same note in ../lot/page.tsx.
-//
-// TODO(RM-4): navigates to /design/new/gaya (step 4) once submitted.
-// Step 5 (review & generate) doesn't exist yet — gaya's own submit goes
-// straight to preview until RM-4 lands.
 
 const POSITION_OPTIONS = [
   { value: "depan", label: "Depan" },
@@ -23,8 +24,11 @@ const POSITION_OPTIONS = [
   { value: "tidak_ada_preferensi", label: "Tidak ada preferensi" },
 ] as const;
 
+const SCHEMA_DEFAULTS: ProgramRuangStep = programRuangStepSchema.parse({});
+
 export default function ProgramRuangStepPage() {
   const router = useRouter();
+  const brief = useWizardStore((state) => state.brief);
   const setProgramRuang = useWizardStore((state) => state.setProgramRuang);
 
   const {
@@ -35,25 +39,16 @@ export default function ProgramRuangStepPage() {
     formState: { errors, isSubmitting },
   } = useForm<ProgramRuangStep>({
     resolver: zodResolver(programRuangStepSchema),
-    defaultValues: {
-      jumlah_lantai: 1,
-      jumlah_kamar_tidur: 3,
-      sertakan_kamar_tidur_utama: true,
-      jumlah_kamar_mandi: 2,
-      parkir_tipe: "carport",
-      parkir_kapasitas_mobil: 1,
-      ruang_tamu: true,
-      konsep_ruang_makan_keluarga: "gabung",
-      dapur: "hanya_bersih",
-      sertakan_kamar_pembantu: false,
-      sertakan_km_pembantu: true,
-      sertakan_area_servis: true,
-      sertakan_kolam_renang: false,
-      posisi_kolam_renang: "belakang",
-      taman_depan: true,
-      taman_belakang: true,
-      sertakan_mushola: false,
-    },
+    // Seeded from the store (see the same note in ../lot/page.tsx) via
+    // deriveProgramRuangStepFromBrief — the stored room_program/amenities
+    // shape, reconstructed back into this step's 17 fields — falling back
+    // to the schema's own defaults on a genuinely fresh visit.
+    defaultValues:
+      deriveProgramRuangStepFromBrief({
+        floors: brief.floors,
+        room_program: brief.room_program,
+        amenities: brief.amenities,
+      }) ?? SCHEMA_DEFAULTS,
   });
 
   const jumlahKamarTidur = watch("jumlah_kamar_tidur");
@@ -80,9 +75,7 @@ export default function ProgramRuangStepPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-16">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Langkah 3 dari 5
-        </p>
+        <WizardStepIndicator current={3} />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           Program Ruang
         </h1>

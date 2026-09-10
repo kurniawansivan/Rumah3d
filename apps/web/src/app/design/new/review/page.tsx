@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { designBriefSchema } from "@rumah3d/schemas";
 
+import { WizardStepIndicator } from "@/components/wizard/WizardStepIndicator";
 import { useWizardStore } from "@/lib/wizard/store";
 import {
   FACING_LABELS,
@@ -53,9 +54,7 @@ export default function ReviewStepPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-16">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Langkah 5 dari 5
-        </p>
+        <WizardStepIndicator current={5} />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           Tinjau & Buat Denah
         </h1>
