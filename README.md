@@ -11,6 +11,7 @@ licensed architect, not a construction document.
 - [`docs/adr/`](docs/adr/) — architecture decisions and why they were made
 - [`docs/hld/system-architecture.md`](docs/hld/system-architecture.md) — how the pieces fit together
 - [`docs/techstack.md`](docs/techstack.md) — full stack at a glance
+- [`docs/roadmap.md`](docs/roadmap.md) — current progress, sprint plan, ticket backlog
 - [`CLAUDE.md`](CLAUDE.md) — how AI agents should work in this repo
 
 ## Repo layout
