@@ -6,14 +6,30 @@ from generation_engine.persistence.database import get_session_factory
 from generation_engine.persistence.models import RoomTypeNorm, Template
 from generation_engine.templates_library.loader import load_template_files
 
+# Heuristic minimums grounded in common Indonesian residential practice,
+# not a cited SNI figure — see docs/prd/README.md's disclaimer language
+# for why that distinction matters here (this product doesn't claim
+# authoritative structural/building-code precision). Covers all 17
+# identifiers in domain.enums.RoomType (== packages/schemas' roomTypeSchema
+# — CLAUDE.md §4).
 ROOM_TYPE_NORMS = [
     ("kamar_tidur_utama", 12.0, None, 3.0),
     ("kamar_tidur", 9.0, None, 2.7),
     ("kamar_mandi", 3.0, None, 1.5),
     ("dapur", 6.0, None, 2.0),
+    ("dapur_bersih", 4.0, None, 1.8),
+    ("dapur_kotor", 4.0, None, 1.8),
     ("ruang_tamu", 12.0, None, 3.0),
     ("ruang_makan", 9.0, None, 2.5),
+    ("ruang_keluarga", 9.0, None, 2.5),
+    ("ruang_makan_keluarga", 16.0, None, 3.5),
     ("carport", 12.0, None, 2.5),
+    ("garasi", 15.0, None, 3.0),
+    ("area_servis", 4.0, None, 1.5),
+    ("kamar_pembantu", 6.0, None, 2.0),
+    ("taman_depan", 6.0, None, 1.5),
+    ("taman_belakang", 6.0, None, 1.5),
+    ("mushola", 4.0, None, 2.0),
 ]
 
 

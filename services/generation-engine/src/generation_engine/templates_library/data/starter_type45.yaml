@@ -1,0 +1,37 @@
+code: type45_1lt_3kt1km
+name: "Tipe 45 - 1 Lantai - 3 Kamar Tidur, 1 Kamar Mandi"
+floors_min: 1
+floors_max: 1
+min_lot_length_m: 12
+min_lot_width_m: 7
+style_tags: [minimalis_modern, tropis]
+room_program_fit:
+  kamar_tidur_utama: [0, 1]
+  kamar_tidur: [1, 3]
+  kamar_mandi: [1, 1]
+  ruang_tamu: [1, 1]
+  ruang_makan_keluarga: [0, 1]
+  dapur: [1, 1]
+  area_servis: [0, 1]
+  carport: [0, 1]
+  taman_depan: [0, 1]
+zoning_graph:
+  nodes:
+    [
+      carport,
+      ruang_tamu,
+      ruang_makan_keluarga,
+      dapur,
+      area_servis,
+      kamar_tidur_utama,
+      kamar_tidur,
+      kamar_mandi,
+      taman_depan,
+    ]
+  edges:
+    - [carport, ruang_tamu]
+    - [ruang_tamu, ruang_makan_keluarga]
+    - [ruang_makan_keluarga, dapur]
+    - [dapur, area_servis]
+    - [kamar_tidur_utama, kamar_mandi]
+    - [ruang_tamu, taman_depan]

@@ -1,0 +1,52 @@
+code: type100_2lt_4kt3km_mushola
+name: "Tipe 100 - 2 Lantai - 4 Kamar Tidur, 3 Kamar Mandi, Mushola"
+floors_min: 2
+floors_max: 3
+min_lot_length_m: 18
+min_lot_width_m: 10
+style_tags: [minimalis_modern, tropis, klasik]
+room_program_fit:
+  kamar_tidur_utama: [1, 1]
+  kamar_tidur: [3, 4]
+  kamar_mandi: [3, 4]
+  ruang_tamu: [1, 1]
+  ruang_makan: [1, 1]
+  ruang_keluarga: [1, 1]
+  dapur_bersih: [1, 1]
+  dapur_kotor: [1, 1]
+  area_servis: [1, 1]
+  garasi: [1, 1]
+  kamar_pembantu: [0, 1]
+  mushola: [0, 1]
+  taman_depan: [1, 1]
+  taman_belakang: [1, 1]
+zoning_graph:
+  nodes:
+    [
+      garasi,
+      ruang_tamu,
+      ruang_makan,
+      ruang_keluarga,
+      dapur_bersih,
+      dapur_kotor,
+      area_servis,
+      kamar_pembantu,
+      mushola,
+      kamar_tidur_utama,
+      kamar_tidur,
+      kamar_mandi,
+      taman_depan,
+      taman_belakang,
+    ]
+  edges:
+    - [garasi, ruang_tamu]
+    - [ruang_tamu, ruang_keluarga]
+    - [ruang_keluarga, ruang_makan]
+    - [ruang_makan, dapur_bersih]
+    - [dapur_bersih, dapur_kotor]
+    - [dapur_kotor, area_servis]
+    - [dapur_kotor, kamar_pembantu]
+    - [ruang_tamu, mushola]
+    - [kamar_tidur_utama, kamar_mandi]
+    - [ruang_tamu, taman_depan]
+    - [dapur_kotor, taman_belakang]

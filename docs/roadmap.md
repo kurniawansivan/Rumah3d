@@ -117,9 +117,37 @@ browser.
 Ref: [`docs/hld/generation-engine-contract.md`](hld/generation-engine-contract.md)
 "Pipeline Stages (Target)", [`docs/adr/0003`](adr/0003-rule-based-template-and-constraint-solver-generation.md).
 
-- [ ] **RM-6** — Curate a real starter template library (currently just
-      one seed, `type36_1lt_2kt1km`). Content-authoring work, not just code
-      — needs realistic Indonesian lot-size/room-program coverage.
+- [x] **RM-6** — Curate a real starter template library: 4 new templates
+      alongside the existing `type36_1lt_2kt1km` (Tipe 45/60/70/100),
+      spanning 1–3 floors, lot sizes 10×6 to 18×10 m, and room-program
+      complexity from a bare carport+dapur layout up to a
+      garasi+dapur-split+kamar-pembantu+mushola program — each with a
+      `room_program_fit` range and a `zoning_graph`. Found and fixed a
+      RoomType drift along the way: `domain/enums.py`'s Python enum was
+      missing 5 members the TS `roomTypeSchema` already had
+      (`dapur_bersih`, `dapur_kotor`, `ruang_makan_keluarga`,
+      `taman_depan`, `taman_belakang`) and incorrectly carried
+      `kolam_renang`, which is amenity-only on both sides of the contract,
+      never a room_program entry — corrected to the 17-member canonical
+      list (CLAUDE.md §4). Expanded `seed_templates.py`'s
+      `ROOM_TYPE_NORMS` from 7 to 17 entries (heuristic min area/width,
+      not SNI-cited — see PRD disclaimer language) to match. Also fixed an
+      internal inconsistency the sync work surfaced in the original
+      `type36` template: `room_program_fit` was missing
+      `kamar_tidur_utama` even though the forward transform always
+      produces that key, and `zoning_graph` referenced a `ruang_makan`
+      node never declared in `room_program_fit`. Added
+      `tests/unit/test_templates_library.py` — every `room_program_fit`
+      key is a valid `RoomType`, `zoning_graph` nodes/edges are a subset
+      of `room_program_fit`, codes are unique — since these are
+      hand-authored YAML with real typo risk and nothing was checking
+      that before. Verified live: `load_template_files()` loads all 5;
+      `uv run ruff check/format`, `mypy`, `pytest` (25 passed, 89.66%
+      coverage) all green; re-ran `seed_templates.py` twice against the
+      local Postgres container, both exit 0; confirmed 5 rows in
+      `engine.templates` and 17 in `engine.room_type_norms` via `psql`;
+      confirmed the running engine's `GET /v1/templates` returns all 5
+      codes.
 - [ ] **RM-7** — Stage 2: template selection/matching (filter
       `engine.templates` by style/floors/room-program fit/lot size).
 - [ ] **RM-8** — Stage 3: CP-SAT geometric fitting (`AddNoOverlap2D`,

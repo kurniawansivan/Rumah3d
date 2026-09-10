@@ -1,0 +1,40 @@
+code: type70_2lt_4kt3km
+name: "Tipe 70 - 2 Lantai - 4 Kamar Tidur, 3 Kamar Mandi"
+floors_min: 2
+floors_max: 2
+min_lot_length_m: 15
+min_lot_width_m: 7
+style_tags: [minimalis_modern]
+room_program_fit:
+  kamar_tidur_utama: [1, 1]
+  kamar_tidur: [3, 3]
+  kamar_mandi: [3, 3]
+  ruang_tamu: [1, 1]
+  ruang_makan_keluarga: [1, 1]
+  dapur: [1, 1]
+  area_servis: [1, 1]
+  garasi: [1, 1]
+  kamar_pembantu: [0, 1]
+  taman_depan: [0, 1]
+zoning_graph:
+  nodes:
+    [
+      garasi,
+      ruang_tamu,
+      ruang_makan_keluarga,
+      dapur,
+      area_servis,
+      kamar_pembantu,
+      kamar_tidur_utama,
+      kamar_tidur,
+      kamar_mandi,
+      taman_depan,
+    ]
+  edges:
+    - [garasi, ruang_tamu]
+    - [ruang_tamu, ruang_makan_keluarga]
+    - [ruang_makan_keluarga, dapur]
+    - [dapur, area_servis]
+    - [dapur, kamar_pembantu]
+    - [kamar_tidur_utama, kamar_mandi]
+    - [ruang_tamu, taman_depan]

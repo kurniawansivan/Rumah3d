@@ -1,0 +1,46 @@
+code: type60_1lt_3kt2km
+name: "Tipe 60 - 1 Lantai - 3 Kamar Tidur, 2 Kamar Mandi"
+floors_min: 1
+floors_max: 1
+min_lot_length_m: 14
+min_lot_width_m: 8
+style_tags: [minimalis_modern, tropis]
+room_program_fit:
+  kamar_tidur_utama: [1, 1]
+  kamar_tidur: [2, 2]
+  kamar_mandi: [2, 2]
+  ruang_tamu: [1, 1]
+  ruang_makan: [1, 1]
+  ruang_keluarga: [1, 1]
+  dapur_bersih: [1, 1]
+  dapur_kotor: [1, 1]
+  area_servis: [1, 1]
+  carport: [1, 1]
+  taman_depan: [1, 1]
+  taman_belakang: [0, 1]
+zoning_graph:
+  nodes:
+    [
+      carport,
+      ruang_tamu,
+      ruang_makan,
+      ruang_keluarga,
+      dapur_bersih,
+      dapur_kotor,
+      area_servis,
+      kamar_tidur_utama,
+      kamar_tidur,
+      kamar_mandi,
+      taman_depan,
+      taman_belakang,
+    ]
+  edges:
+    - [carport, ruang_tamu]
+    - [ruang_tamu, ruang_keluarga]
+    - [ruang_keluarga, ruang_makan]
+    - [ruang_makan, dapur_bersih]
+    - [dapur_bersih, dapur_kotor]
+    - [dapur_kotor, area_servis]
+    - [kamar_tidur_utama, kamar_mandi]
+    - [ruang_tamu, taman_depan]
+    - [dapur_kotor, taman_belakang]
