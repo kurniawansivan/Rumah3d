@@ -19,10 +19,14 @@ class LotInput(BaseModel):
 
 
 class SetbacksInput(BaseModel):
-    front_m: float = Field(ge=0)
-    back_m: float = Field(ge=0)
-    left_m: float = Field(ge=0)
-    right_m: float = Field(ge=0)
+    # Defaults match docs/prd/floor-plan-wizard.md Step 2 exactly — the
+    # wizard's GSB fields are optional with these same generic fallbacks,
+    # so a caller that omits a value (or the whole `setbacks` object) still
+    # gets a sensible, documented buildable envelope rather than a 422.
+    front_m: float = Field(default=3.0, ge=0)
+    back_m: float = Field(default=2.0, ge=0)
+    left_m: float = Field(default=1.5, ge=0)
+    right_m: float = Field(default=1.5, ge=0)
 
 
 class RoomProgramEntry(BaseModel):
@@ -33,9 +37,9 @@ class RoomProgramEntry(BaseModel):
 
 class PoolAmenity(BaseModel):
     included: bool = False
-    position_preference: (
-        Literal["depan", "belakang", "samping", "tidak_ada_preferensi"] | None
-    ) = None
+    position_preference: Literal["depan", "belakang", "samping", "tidak_ada_preferensi"] | None = (
+        None
+    )
 
 
 class KamarPembantuAmenity(BaseModel):
@@ -51,7 +55,7 @@ class Amenities(BaseModel):
 class GenerationRequest(BaseModel):
     project_id: str
     lot: LotInput
-    setbacks: SetbacksInput
+    setbacks: SetbacksInput = Field(default_factory=SetbacksInput)
     kdb_percent: float | None = Field(default=60, ge=1, le=100)
     klb_percent: float | None = Field(default=None, ge=1, le=100)
     floors: int = Field(ge=1, le=3)

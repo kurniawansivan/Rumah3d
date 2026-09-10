@@ -1,11 +1,11 @@
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from alembic import context
 from generation_engine.config import get_settings
 from generation_engine.persistence.models import Base
 
@@ -26,17 +26,20 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        version_table_schema="engine",
     )
     with context.begin_transaction():
         context.run_migrations()
 
 
 def do_run_migrations(connection: Connection) -> None:
+    # `alembic_version` is deliberately left in the connection's default
+    # schema (public), not `version_table_schema="engine"` — the `engine`
+    # schema itself doesn't exist until migration 0001 creates it, which
+    # would otherwise be a chicken-and-egg failure the first time this runs
+    # against a brand-new database.
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
-        version_table_schema="engine",
     )
     with context.begin_transaction():
         context.run_migrations()

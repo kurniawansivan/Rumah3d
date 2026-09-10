@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -54,7 +54,7 @@ class TemplateRef(BaseModel):
 
 class RuleRef(BaseModel):
     rule_id: str
-    params: dict = Field(default_factory=dict)
+    params: dict[str, Any] = Field(default_factory=dict)
 
 
 class SolverInfo(BaseModel):
@@ -75,7 +75,7 @@ class CandidateMetadata(BaseModel):
 class ValidationCheck(BaseModel):
     rule_id: str
     passed: bool
-    params: dict = Field(default_factory=dict)
+    params: dict[str, Any] = Field(default_factory=dict)
 
 
 class ValidationReport(BaseModel):

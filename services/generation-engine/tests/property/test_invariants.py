@@ -1,3 +1,5 @@
+from typing import Any
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -46,18 +48,20 @@ def test_stub_pipeline_never_returns_invalid_geometry(
 
 
 def test_stub_pipeline_is_deterministic() -> None:
-    kwargs = {
-        "length_m": 15,
-        "width_m": 10,
-        "front_m": 3,
-        "back_m": 2,
-        "left_m": 1.5,
-        "right_m": 1.5,
-        "kdb_percent": 60,
-        "klb_percent": None,
-    }
-    first = generate_stub(**kwargs)
-    second = generate_stub(**kwargs)
+    def run() -> dict[str, Any]:
+        return generate_stub(
+            length_m=15,
+            width_m=10,
+            front_m=3,
+            back_m=2,
+            left_m=1.5,
+            right_m=1.5,
+            kdb_percent=60,
+            klb_percent=None,
+        )
+
+    first = run()
+    second = run()
     assert first["candidates"][0]["floors"] == second["candidates"][0]["floors"]
 
 

@@ -30,7 +30,7 @@ def compute_envelope(
                 (left_m, front_m + inset_length),
             ]
         )
-        polygon = list(shape.exterior.coords)[:-1]
+        polygon = [(x, y) for x, y, *_ in shape.exterior.coords[:-1]]
         area = shape.area
 
     max_footprint = (kdb_percent / 100) * lot_area if kdb_percent is not None else None

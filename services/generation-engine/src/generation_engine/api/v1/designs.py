@@ -27,5 +27,5 @@ async def generate(request: GenerationRequest) -> dict[str, Any]:
 async def get_design(version_id: str) -> dict[str, str]:
     raise HTTPException(
         status_code=404,
-        detail=f"No stored version {version_id} — persistence not wired up yet (engine is stub-mode only).",
+        detail=f"No stored version {version_id} — persistence not wired up yet (stub-mode only).",
     )

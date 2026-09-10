@@ -34,16 +34,49 @@ def _build_stub_room(
         return None
 
     polygon = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
-    room = Room(id="r1", type=RoomType.RUANG_TAMU.value, polygon=polygon, area_m2=round(width * depth, 2))
+    room = Room(
+        id="r1", type=RoomType.RUANG_TAMU.value, polygon=polygon, area_m2=round(width * depth, 2)
+    )
 
     walls = [
-        Wall(id="w1", polyline=[(x0, y0), (x1, y0)], thickness_m=0.15, is_exterior=True, height_m=FLOOR_HEIGHT_M),
-        Wall(id="w2", polyline=[(x1, y0), (x1, y1)], thickness_m=0.15, is_exterior=True, height_m=FLOOR_HEIGHT_M),
-        Wall(id="w3", polyline=[(x1, y1), (x0, y1)], thickness_m=0.15, is_exterior=True, height_m=FLOOR_HEIGHT_M),
-        Wall(id="w4", polyline=[(x0, y1), (x0, y0)], thickness_m=0.15, is_exterior=True, height_m=FLOOR_HEIGHT_M),
+        Wall(
+            id="w1",
+            polyline=[(x0, y0), (x1, y0)],
+            thickness_m=0.15,
+            is_exterior=True,
+            height_m=FLOOR_HEIGHT_M,
+        ),
+        Wall(
+            id="w2",
+            polyline=[(x1, y0), (x1, y1)],
+            thickness_m=0.15,
+            is_exterior=True,
+            height_m=FLOOR_HEIGHT_M,
+        ),
+        Wall(
+            id="w3",
+            polyline=[(x1, y1), (x0, y1)],
+            thickness_m=0.15,
+            is_exterior=True,
+            height_m=FLOOR_HEIGHT_M,
+        ),
+        Wall(
+            id="w4",
+            polyline=[(x0, y1), (x0, y0)],
+            thickness_m=0.15,
+            is_exterior=True,
+            height_m=FLOOR_HEIGHT_M,
+        ),
     ]
     openings = [
-        Opening(id="o1", type="door", wall_id="w1", offset_m=min(1.2, width / 2), width_m=0.9, height_m=2.1)
+        Opening(
+            id="o1",
+            type="door",
+            wall_id="w1",
+            offset_m=min(1.2, width / 2),
+            width_m=0.9,
+            height_m=2.1,
+        )
     ]
 
     return room, walls, openings
@@ -62,7 +95,9 @@ def generate_stub(
 ) -> dict[str, Any]:
     start = time.monotonic()
     lot_area = length_m * width_m
-    envelope = compute_envelope(length_m, width_m, front_m, back_m, left_m, right_m, kdb_percent, klb_percent)
+    envelope = compute_envelope(
+        length_m, width_m, front_m, back_m, left_m, right_m, kdb_percent, klb_percent
+    )
 
     built = _build_stub_room(envelope)
     solve_time_ms = int((time.monotonic() - start) * 1000)
@@ -79,7 +114,9 @@ def generate_stub(
         "circulation_connected": circulation_connected([room], walls, openings),
     }
     if not all(checks.values()):
-        return _infeasible_response(solve_time_ms, reason="stub_room_failed_validation", checks=checks)
+        return _infeasible_response(
+            solve_time_ms, reason="stub_room_failed_validation", checks=checks
+        )
 
     return {
         "request_id": str(uuid.uuid4()),
@@ -113,7 +150,9 @@ def generate_stub(
                 },
                 "validation": {
                     "passed": True,
-                    "checks": [{"rule_id": k, "passed": v, "params": {}} for k, v in checks.items()],
+                    "checks": [
+                        {"rule_id": k, "passed": v, "params": {}} for k, v in checks.items()
+                    ],
                 },
             }
         ],

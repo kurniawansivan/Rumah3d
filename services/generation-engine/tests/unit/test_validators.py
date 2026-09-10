@@ -17,7 +17,9 @@ ENVELOPE = LotEnvelope(
 )
 
 
-def _room(id_: str, polygon: list[tuple[float, float]], area: float, type_: str = "ruang_tamu") -> Room:
+def _room(
+    id_: str, polygon: list[tuple[float, float]], area: float, type_: str = "ruang_tamu"
+) -> Room:
     return Room(id=id_, type=type_, polygon=polygon, area_m2=area)
 
 
@@ -64,14 +66,18 @@ def test_min_area_ok() -> None:
 
 def test_circulation_connected_true_with_door() -> None:
     room = _room("r1", [(0, 0), (4, 0), (4, 4), (0, 4)], 16)
-    wall = Wall(id="w1", polyline=[(0, 0), (4, 0)], thickness_m=0.15, is_exterior=True, height_m=3.5)
+    wall = Wall(
+        id="w1", polyline=[(0, 0), (4, 0)], thickness_m=0.15, is_exterior=True, height_m=3.5
+    )
     opening = Opening(id="o1", type="door", wall_id="w1", offset_m=1, width_m=0.9, height_m=2.1)
     assert circulation_connected([room], [wall], [opening]) is True
 
 
 def test_circulation_connected_false_without_door() -> None:
     room = _room("r1", [(0, 0), (4, 0), (4, 4), (0, 4)], 16)
-    wall = Wall(id="w1", polyline=[(0, 0), (4, 0)], thickness_m=0.15, is_exterior=True, height_m=3.5)
+    wall = Wall(
+        id="w1", polyline=[(0, 0), (4, 0)], thickness_m=0.15, is_exterior=True, height_m=3.5
+    )
     window = Opening(id="o1", type="window", wall_id="w1", offset_m=1, width_m=0.9, height_m=1.2)
     assert circulation_connected([room], [wall], [window]) is False
 

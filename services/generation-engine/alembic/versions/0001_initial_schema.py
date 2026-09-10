@@ -6,9 +6,10 @@ Create Date: 2026-09-09
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 revision = "0001"
 down_revision = None
@@ -38,8 +39,12 @@ def upgrade() -> None:
         sa.Column("min_lot_width_m", sa.Numeric(6, 2), nullable=False),
         sa.Column("version", sa.Integer, nullable=False, server_default="1"),
         sa.Column("is_active", sa.Boolean, nullable=False, server_default=sa.true()),
-        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         schema="engine",
     )
 
@@ -53,6 +58,19 @@ def upgrade() -> None:
         schema="engine",
     )
 
+    # Raw SQL + exception guard rather than
+    # `postgresql.ENUM(...).create(op.get_bind())`: that call's `checkfirst`
+    # existence check doesn't reliably scope to a non-default schema, which
+    # made it try (and fail) to recreate this type on a second run.
+    op.execute(
+        """
+        DO $$ BEGIN
+            CREATE TYPE engine.request_status AS ENUM
+                ('pending', 'success', 'partial', 'infeasible', 'error');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+        """
+    )
     request_status = postgresql.ENUM(
         "pending",
         "success",
@@ -61,8 +79,8 @@ def upgrade() -> None:
         "error",
         name="request_status",
         schema="engine",
+        create_type=False,
     )
-    request_status.create(op.get_bind())
 
     op.create_table(
         "design_generation_requests",
@@ -77,7 +95,9 @@ def upgrade() -> None:
         sa.Column("input_snapshot", postgresql.JSONB, nullable=False),
         sa.Column("engine_version", sa.Text, nullable=False),
         sa.Column("status", request_status, nullable=False),
-        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         schema="engine",
     )
     op.create_index(
@@ -118,7 +138,9 @@ def upgrade() -> None:
         sa.Column("validation_report", postgresql.JSONB, nullable=False),
         sa.Column("total_building_footprint_m2", sa.Numeric(8, 2), nullable=True),
         sa.Column("is_selected", sa.Boolean, nullable=False, server_default=sa.false()),
-        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.UniqueConstraint("request_id", "version_number"),
         schema="engine",
     )
