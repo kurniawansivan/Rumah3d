@@ -250,6 +250,61 @@ export function buildRoomProgramFromStep3(
   return { floors: data.jumlah_lantai, room_program, amenities };
 }
 
+/**
+ * The inverse of `buildRoomProgramFromStep3` — reconstructs what the
+ * step-3 form should show when a user revisits it, from whatever's
+ * already stored (the built `room_program`/`amenities`/`floors`, not the
+ * original 17 form answers, which aren't kept anywhere once transformed).
+ * Not a perfect inverse for every conceivable input — two things this
+ * schema's own transform is intentionally lossy about, so this function
+ * can't recover them either: a `count: 0` entry (`buildRoomProgramFromStep3`
+ * never emits one, absence is the "not wanted" signal instead), and
+ * `sertakan_km_pembantu` whenever `sertakan_kamar_pembantu` is `false` —
+ * `with_bathroom` is always forced `false` once kamar_pembantu itself is
+ * excluded, so this always derives `sertakan_km_pembantu: false` in that
+ * case regardless of what the form last showed there (correct: that
+ * field is moot while its parent checkbox is unchecked anyway). Exact for
+ * everything else `buildRoomProgramFromStep3` actually produces, which is
+ * the only thing the wizard ever feeds back into itself.
+ * Returns `undefined` when the step hasn't been completed at all yet, so
+ * the caller falls back to the form's own schema defaults instead of
+ * half-populating from an absent slice.
+ */
+export function deriveProgramRuangStepFromBrief(
+  brief: Partial<Pick<DesignBrief, "floors" | "room_program" | "amenities">>,
+): ProgramRuangStep | undefined {
+  const { floors, room_program, amenities } = brief;
+  if (floors === undefined || room_program === undefined || amenities === undefined) {
+    return undefined;
+  }
+
+  const countOf = (type: RoomType) => room_program.find((item) => item.type === type)?.count ?? 0;
+  const has = (type: RoomType) => room_program.some((item) => item.type === type);
+  const parkirEntry = room_program.find(
+    (item) => item.type === "carport" || item.type === "garasi",
+  );
+
+  return {
+    jumlah_lantai: floors,
+    jumlah_kamar_tidur: countOf("kamar_tidur_utama") + countOf("kamar_tidur"),
+    sertakan_kamar_tidur_utama: has("kamar_tidur_utama"),
+    jumlah_kamar_mandi: countOf("kamar_mandi"),
+    parkir_tipe: parkirEntry ? (parkirEntry.type as "carport" | "garasi") : "tidak_ada",
+    parkir_kapasitas_mobil: parkirEntry?.count ?? 1,
+    ruang_tamu: has("ruang_tamu"),
+    konsep_ruang_makan_keluarga: has("ruang_makan_keluarga") ? "gabung" : "terpisah",
+    dapur: has("dapur_bersih") || has("dapur_kotor") ? "bersih_dan_kotor" : "hanya_bersih",
+    sertakan_kamar_pembantu: amenities.kamar_pembantu.included,
+    sertakan_km_pembantu: amenities.kamar_pembantu.with_bathroom,
+    sertakan_area_servis: has("area_servis"),
+    sertakan_kolam_renang: amenities.pool.included,
+    posisi_kolam_renang: amenities.pool.position_preference ?? "belakang",
+    taman_depan: has("taman_depan"),
+    taman_belakang: has("taman_belakang"),
+    sertakan_mushola: has("mushola"),
+  };
+}
+
 export const designBriefSchema = z.object({
   lot: lotSchema,
   setbacks: setbacksSchema.optional(),

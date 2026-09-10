@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyPriorityChoice,
   buildRoomProgramFromStep3,
+  deriveProgramRuangStepFromBrief,
   designBriefSchema,
   gayaStepSchema,
   lotStepSchema,
@@ -400,5 +401,75 @@ describe("applyPriorityChoice", () => {
     applyPriorityChoice(program, "ruang_komunal");
 
     expect(program).toEqual(original);
+  });
+});
+
+describe("deriveProgramRuangStepFromBrief", () => {
+  it("returns undefined when the step hasn't been completed yet", () => {
+    expect(deriveProgramRuangStepFromBrief({})).toBeUndefined();
+    expect(deriveProgramRuangStepFromBrief({ floors: 1 })).toBeUndefined();
+  });
+
+  // sertakan_km_pembantu is moot whenever sertakan_kamar_pembantu is
+  // false — buildRoomProgramFromStep3 correctly discards it (with_bathroom
+  // is always false when kamar_pembantu itself is excluded), so it isn't
+  // recoverable from what's stored. Every case below pins it to `false`
+  // (matching what the derive function will produce) except the one case
+  // that turns kamar_pembantu on, where the preference is real and does
+  // round-trip.
+  it.each<[string, ProgramRuangStep]>([
+    ["defaults", programRuangStepSchema.parse({ sertakan_km_pembantu: false })],
+    [
+      "no kamar tidur utama",
+      programRuangStepSchema.parse({
+        jumlah_kamar_tidur: 1,
+        sertakan_kamar_tidur_utama: false,
+        sertakan_km_pembantu: false,
+      }),
+    ],
+    [
+      "garasi instead of carport",
+      programRuangStepSchema.parse({ parkir_tipe: "garasi", sertakan_km_pembantu: false }),
+    ],
+    [
+      "no parking",
+      programRuangStepSchema.parse({ parkir_tipe: "tidak_ada", sertakan_km_pembantu: false }),
+    ],
+    [
+      "ruang makan/keluarga terpisah",
+      programRuangStepSchema.parse({
+        konsep_ruang_makan_keluarga: "terpisah",
+        sertakan_km_pembantu: false,
+      }),
+    ],
+    [
+      "dapur bersih dan kotor",
+      programRuangStepSchema.parse({ dapur: "bersih_dan_kotor", sertakan_km_pembantu: false }),
+    ],
+    [
+      "kolam renang and kamar pembantu included",
+      programRuangStepSchema.parse({
+        sertakan_kolam_renang: true,
+        posisi_kolam_renang: "depan",
+        sertakan_kamar_pembantu: true,
+        sertakan_km_pembantu: false,
+      }),
+    ],
+    [
+      "everything off",
+      programRuangStepSchema.parse({
+        ruang_tamu: false,
+        sertakan_area_servis: false,
+        taman_depan: false,
+        taman_belakang: false,
+        sertakan_mushola: false,
+        sertakan_km_pembantu: false,
+      }),
+    ],
+  ])("round-trips through buildRoomProgramFromStep3 unchanged: %s", (_name, original) => {
+    const built = buildRoomProgramFromStep3(original);
+    const derived = deriveProgramRuangStepFromBrief(built);
+
+    expect(derived).toEqual(original);
   });
 });
