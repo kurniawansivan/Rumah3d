@@ -22,7 +22,7 @@ describe("RegulasiStepPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /lanjutkan/i }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/preview"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/program"));
 
     const { brief } = useWizardStore.getState();
     expect(brief.setbacks).toBeUndefined();
@@ -38,7 +38,7 @@ describe("RegulasiStepPage", () => {
     fireEvent.change(screen.getByLabelText(/^belakang/i), { target: { value: "2" } });
     fireEvent.click(screen.getByRole("button", { name: /lanjutkan/i }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/preview"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/program"));
 
     expect(useWizardStore.getState().brief.setbacks).toEqual({
       front_m: 3,

@@ -12,9 +12,9 @@ import { useWizardStore } from "@/lib/wizard/store";
 // TODO(shadcn/ui): see the same note in ../lot/page.tsx — plain HTML/
 // Tailwind until shadcn/ui's CLI can run again.
 //
-// TODO(RM-2..RM-4): navigates straight to /design/new/preview once
-// submitted, since steps 3-4 (program ruang, gaya & prioritas) don't
-// exist yet — point this at /design/new/program once RM-2 lands.
+// TODO(RM-3/RM-4): navigates to /design/new/program (step 3) once
+// submitted. Step 4 (gaya & prioritas) doesn't exist yet — program's own
+// submit goes straight to preview until RM-3 lands.
 //
 // `useForm<RegulasiStep>` explicit for the same reason as the lot step:
 // letting it infer from `defaultValues` alone silently narrows the type.
@@ -55,7 +55,7 @@ export default function RegulasiStepPage() {
       : undefined;
 
     setRegulasi(setbacks, parsed.kdb_percent, parsed.klb_percent);
-    router.push("/design/new/preview");
+    router.push("/design/new/program");
   };
 
   return (

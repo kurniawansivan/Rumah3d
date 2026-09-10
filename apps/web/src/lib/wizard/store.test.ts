@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { Lot, Setbacks } from "@rumah3d/schemas";
+import type { Amenities, Lot, RoomProgramItem, Setbacks } from "@rumah3d/schemas";
 
 import { useWizardStore } from "./store";
 
@@ -16,6 +16,16 @@ const sampleSetbacks: Setbacks = {
   back_m: 2,
   left_m: 1.5,
   right_m: 1.5,
+};
+
+const sampleRoomProgram: RoomProgramItem[] = [
+  { type: "kamar_tidur_utama", count: 1, priority: "required" },
+  { type: "kamar_tidur", count: 2, priority: "required" },
+];
+
+const sampleAmenities: Amenities = {
+  pool: { included: false },
+  kamar_pembantu: { included: false, with_bathroom: false },
 };
 
 describe("useWizardStore", () => {
@@ -52,9 +62,19 @@ describe("useWizardStore", () => {
     expect(brief.klb_percent).toBeUndefined();
   });
 
+  it("setProgramRuang stores floors, room_program and amenities", () => {
+    useWizardStore.getState().setProgramRuang(2, sampleRoomProgram, sampleAmenities);
+
+    const { brief } = useWizardStore.getState();
+    expect(brief.floors).toBe(2);
+    expect(brief.room_program).toEqual(sampleRoomProgram);
+    expect(brief.amenities).toEqual(sampleAmenities);
+  });
+
   it("reset clears back to an empty brief", () => {
     useWizardStore.getState().setLot(sampleLot);
     useWizardStore.getState().setRegulasi(sampleSetbacks, 60, 120);
+    useWizardStore.getState().setProgramRuang(1, sampleRoomProgram, sampleAmenities);
     useWizardStore.getState().reset();
 
     expect(useWizardStore.getState().brief).toEqual({});

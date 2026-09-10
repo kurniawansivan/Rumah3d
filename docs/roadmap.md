@@ -52,8 +52,18 @@ skill.
       `kdb`). Verified live: lot → regulasi → preview renders a room sized
       to the real GSB values, not the engine's hardcoded defaults.
       Ref: [`docs/prd/floor-plan-wizard.md`](prd/floor-plan-wizard.md) Step 2.
-- [ ] **RM-2** — Step 3: Program Ruang (room program + amenities form —
-      the biggest step, ~15 fields). Ref: same doc, Step 3.
+- [x] **RM-2** — Step 3: Program Ruang (room program + amenities form —
+      17 fields, several conditional: kapasitas mobil, KM pembantu, posisi
+      kolam). Added 6 room-type identifiers the PRD's field mapping needed
+      but the enum didn't have yet (`dapur_bersih`/`dapur_kotor`,
+      `ruang_makan_keluarga`, `garasi`, `taman_depan`/`taman_belakang`).
+      The UI-fields-to-room_program translation
+      (`buildRoomProgramFromStep3`) is a pure, independently unit-tested
+      function in `packages/schemas`, not inline in the page — it's the
+      highest-risk part of this ticket (a wrong mapping silently produces
+      a wrong denah). Verified live end to end: lot → regulasi → program
+      (incl. toggling the kolam renang conditional field) → preview.
+      Ref: same doc, Step 3.
 - [ ] **RM-3** — Step 4: Gaya & Prioritas.
       Ref: same doc, Step 4.
 - [ ] **RM-4** — Step 5: Review & Generate — summary of Steps 1–4 with
