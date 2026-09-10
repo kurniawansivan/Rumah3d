@@ -71,10 +71,19 @@ describe("useWizardStore", () => {
     expect(brief.amenities).toEqual(sampleAmenities);
   });
 
+  it("setGaya stores style and prioritas_saat_tidak_muat", () => {
+    useWizardStore.getState().setGaya("tropis", "ruang_komunal");
+
+    const { brief } = useWizardStore.getState();
+    expect(brief.style).toBe("tropis");
+    expect(brief.prioritas_saat_tidak_muat).toBe("ruang_komunal");
+  });
+
   it("reset clears back to an empty brief", () => {
     useWizardStore.getState().setLot(sampleLot);
     useWizardStore.getState().setRegulasi(sampleSetbacks, 60, 120);
     useWizardStore.getState().setProgramRuang(1, sampleRoomProgram, sampleAmenities);
+    useWizardStore.getState().setGaya("minimalis_modern", "kamar");
     useWizardStore.getState().reset();
 
     expect(useWizardStore.getState().brief).toEqual({});

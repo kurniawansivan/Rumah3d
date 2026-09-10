@@ -21,12 +21,12 @@ describe("ProgramRuangStepPage", () => {
     sessionStorage.clear();
   });
 
-  it("submits the default room program and navigates to preview", async () => {
+  it("submits the default room program and navigates to the gaya step", async () => {
     render(<ProgramRuangStepPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /lanjutkan/i }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/preview"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/gaya"));
 
     const { brief } = useWizardStore.getState();
     expect(brief.floors).toBe(1);
@@ -98,7 +98,7 @@ describe("ProgramRuangStepPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /lanjutkan/i }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/preview"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/gaya"));
     expect(programTypes()).not.toContain("kamar_tidur_utama");
     expect(programTypes()).toContain("kamar_tidur");
   });

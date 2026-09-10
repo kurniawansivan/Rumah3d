@@ -64,7 +64,13 @@ skill.
       a wrong denah). Verified live end to end: lot → regulasi → program
       (incl. toggling the kolam renang conditional field) → preview.
       Ref: same doc, Step 3.
-- [ ] **RM-3** — Step 4: Gaya & Prioritas.
+- [x] **RM-3** — Step 4: Gaya & Prioritas. The 2 fields themselves were
+      trivial, but `prioritas_saat_tidak_muat` was previously collected
+      and stored with no effect — added `applyPriorityChoice` (the piece
+      the HLD already documented but nothing implemented) so it actually
+      tags `room_program` entries `required`/`flexible` before the BFF
+      calls the engine. Verified live end to end: lot → regulasi →
+      program → gaya (changed to tropis/ruang_komunal) → preview.
       Ref: same doc, Step 4.
 - [ ] **RM-4** — Step 5: Review & Generate — summary of Steps 1–4 with
       "Ubah" links, disclaimer, wires the _full_ brief to the BFF instead

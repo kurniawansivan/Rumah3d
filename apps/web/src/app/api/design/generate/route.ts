@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { designBriefSchema } from "@rumah3d/schemas";
+import { applyPriorityChoice, designBriefSchema } from "@rumah3d/schemas";
 
 /**
- * Only wizard step 1 ("lot data") collects real answers so far, so a
- * request body coming from the client is only a `{ lot, setbacks }` slice
- * of the full design brief. Merge in sensible defaults for the rest so
- * `designBriefSchema` — the full contract — can still validate end-to-end
- * against a partial UI. Remove/replace these as later wizard steps land.
+ * Wizard steps 1-4 (lot, regulasi, program ruang, gaya & prioritas)
+ * collect real answers; step 5 (review) doesn't exist yet, so a request
+ * body reaching here is always the full brief *except* whatever a user
+ * reached this route without going through the whole wizard for (e.g.
+ * hitting preview directly). Merge in sensible defaults for whatever's
+ * still missing so `designBriefSchema` — the full contract — can still
+ * validate end-to-end. Remove once RM-4's review step makes every field
+ * always present.
  */
 const DEFAULT_BRIEF_FIELDS = {
   floors: 1,
@@ -62,7 +65,16 @@ export async function POST(request: NextRequest) {
   // isn't something the wizard collects). Generate a placeholder until a
   // real project is created earlier in the flow and its id threaded
   // through here instead.
-  const enginePayload = { ...parsed.data, project_id: crypto.randomUUID() };
+  //
+  // room_program's priority is patched here, not stored that way in the
+  // wizard state — applyPriorityChoice is what actually turns Step 4's
+  // single choice into a per-entry required/flexible tag, right before
+  // the one place that needs it (docs/hld/generation-engine-contract.md).
+  const enginePayload = {
+    ...parsed.data,
+    project_id: crypto.randomUUID(),
+    room_program: applyPriorityChoice(parsed.data.room_program, parsed.data.prioritas_saat_tidak_muat),
+  };
 
   try {
     const engineResponse = await fetch(`${engineUrl}/v1/designs/generate`, {

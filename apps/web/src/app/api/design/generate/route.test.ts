@@ -75,6 +75,39 @@ describe("POST /api/design/generate", () => {
     expect(await response.json()).toEqual(engineBody);
   });
 
+  it("applies the prioritas_saat_tidak_muat choice to room_program before forwarding", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ request_id: "abc", status: "success", candidates: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await POST(
+      makeRequest({
+        ...VALID_LOT_BODY,
+        room_program: [
+          { type: "kamar_tidur", count: 3 },
+          { type: "ruang_tamu", count: 1 },
+        ],
+        prioritas_saat_tidak_muat: "ruang_komunal",
+      }),
+    );
+
+    const [, requestInit] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const sentBody = JSON.parse(requestInit.body as string);
+    const priorityByType = Object.fromEntries(
+      (sentBody.room_program as Array<{ type: string; priority: string }>).map((item) => [
+        item.type,
+        item.priority,
+      ]),
+    );
+
+    expect(priorityByType.kamar_tidur).toBe("flexible");
+    expect(priorityByType.ruang_tamu).toBe("required");
+  });
+
   it("returns 502 when the engine responds with a non-2xx status", async () => {
     global.fetch = vi
       .fn()

@@ -12,9 +12,9 @@ import { useWizardStore } from "@/lib/wizard/store";
 
 // TODO(shadcn/ui): see the same note in ../lot/page.tsx.
 //
-// TODO(RM-3/RM-4): navigates straight to /design/new/preview once
-// submitted, since step 4 (gaya & prioritas) doesn't exist yet — point
-// this at /design/new/gaya once RM-3 lands.
+// TODO(RM-4): navigates to /design/new/gaya (step 4) once submitted.
+// Step 5 (review & generate) doesn't exist yet — gaya's own submit goes
+// straight to preview until RM-4 lands.
 
 const POSITION_OPTIONS = [
   { value: "depan", label: "Depan" },
@@ -74,7 +74,7 @@ export default function ProgramRuangStepPage() {
     const parsed = programRuangStepSchema.parse(values);
     const { floors, room_program, amenities } = buildRoomProgramFromStep3(parsed);
     setProgramRuang(floors, room_program, amenities);
-    router.push("/design/new/preview");
+    router.push("/design/new/gaya");
   };
 
   return (
