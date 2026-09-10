@@ -263,9 +263,59 @@ export const designBriefSchema = z.object({
   floors: z.number().int().min(1).max(3),
   room_program: z.array(roomProgramItemSchema),
   amenities: amenitiesSchema,
-  style: styleSchema,
+  style: styleSchema.default("minimalis_modern"),
   prioritas_saat_tidak_muat: priorityChoiceSchema.default("kamar"),
 });
+
+/**
+ * Step 4's ("gaya & prioritas") field shape — both fields already exist
+ * 1:1 on `designBriefSchema` under the same names, so this is a `.pick()`
+ * rather than a redefinition (per the `new-wizard-step` skill).
+ */
+export const gayaStepSchema = designBriefSchema.pick({
+  style: true,
+  prioritas_saat_tidak_muat: true,
+});
+
+/** Room types Step 4's "kamar" choice protects — see `applyPriorityChoice`. */
+const KAMAR_ROOM_TYPES = new Set<RoomType>(["kamar_tidur_utama", "kamar_tidur", "kamar_mandi"]);
+
+/** Room types Step 4's "ruang_komunal" choice protects. */
+const RUANG_KOMUNAL_ROOM_TYPES = new Set<RoomType>([
+  "ruang_tamu",
+  "ruang_makan",
+  "ruang_keluarga",
+  "ruang_makan_keluarga",
+]);
+
+/**
+ * Applies Step 4's single "protect kamar or ruang_komunal" choice to a
+ * built `room_program` — see `docs/hld/generation-engine-contract.md`'s
+ * note on why the engine contract carries a `priority` per entry instead
+ * of the wizard's one flat choice: the *whole* protected category becomes
+ * `"required"`, the *whole* other category becomes `"flexible"`, and
+ * every entry outside both categories (dapur, parkir, area servis, taman,
+ * mushola) is left exactly as `buildRoomProgramFromStep3` set it —
+ * Step 4 only ever trades bedrooms off against communal space, nothing
+ * else. Pure and separately testable for the same reason
+ * `buildRoomProgramFromStep3` is: this is a business rule, not form
+ * plumbing, and belongs wherever it can be verified in isolation — the
+ * BFF calls it right before forwarding to the engine, per the HLD.
+ */
+export function applyPriorityChoice(
+  roomProgram: RoomProgramItem[],
+  choice: PriorityChoice,
+): RoomProgramItem[] {
+  return roomProgram.map((item) => {
+    if (KAMAR_ROOM_TYPES.has(item.type)) {
+      return { ...item, priority: choice === "kamar" ? "required" : "flexible" };
+    }
+    if (RUANG_KOMUNAL_ROOM_TYPES.has(item.type)) {
+      return { ...item, priority: choice === "ruang_komunal" ? "required" : "flexible" };
+    }
+    return item;
+  });
+}
 
 export type CompassDirection = z.infer<typeof compassDirectionSchema>;
 export type LotPosition = z.infer<typeof lotPositionSchema>;
@@ -285,3 +335,4 @@ export type KonsepRuangMakanKeluarga = z.infer<typeof konsepRuangMakanKeluargaSc
 export type Dapur = z.infer<typeof dapurSchema>;
 export type ProgramRuangStep = z.infer<typeof programRuangStepSchema>;
 export type DesignBrief = z.infer<typeof designBriefSchema>;
+export type GayaStep = z.infer<typeof gayaStepSchema>;

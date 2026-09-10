@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  applyPriorityChoice,
   buildRoomProgramFromStep3,
   designBriefSchema,
+  gayaStepSchema,
   lotStepSchema,
   programRuangStepSchema,
   regulasiStepSchema,
   type ProgramRuangStep,
+  type RoomProgramItem,
 } from "./design-brief";
 
 const validLot = {
@@ -329,5 +332,73 @@ describe("buildRoomProgramFromStep3", () => {
     const result = buildRoomProgramFromStep3({ ...defaults, jumlah_lantai: 2 });
 
     expect(result.floors).toBe(2);
+  });
+});
+
+describe("gayaStepSchema", () => {
+  it("applies both defaults on an empty payload", () => {
+    const result = gayaStepSchema.safeParse({});
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.style).toBe("minimalis_modern");
+      expect(result.data.prioritas_saat_tidak_muat).toBe("kamar");
+    }
+  });
+
+  it("rejects an unknown style value", () => {
+    const result = gayaStepSchema.safeParse({ style: "brutalist" });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("applyPriorityChoice", () => {
+  const program: RoomProgramItem[] = [
+    { type: "kamar_tidur_utama", count: 1, priority: "required" },
+    { type: "kamar_tidur", count: 2, priority: "required" },
+    { type: "kamar_mandi", count: 2, priority: "required" },
+    { type: "ruang_makan_keluarga", count: 1, priority: "required" },
+    { type: "dapur", count: 1, priority: "required" },
+    { type: "carport", count: 1, priority: "required" },
+  ];
+
+  function priorityOf(result: RoomProgramItem[], type: string) {
+    return result.find((item) => item.type === type)?.priority;
+  }
+
+  it("keeps kamar entries required and flexes ruang_komunal ones when 'kamar' is chosen", () => {
+    const result = applyPriorityChoice(program, "kamar");
+
+    expect(priorityOf(result, "kamar_tidur_utama")).toBe("required");
+    expect(priorityOf(result, "kamar_tidur")).toBe("required");
+    expect(priorityOf(result, "kamar_mandi")).toBe("required");
+    expect(priorityOf(result, "ruang_makan_keluarga")).toBe("flexible");
+  });
+
+  it("keeps ruang_komunal entries required and flexes kamar ones when 'ruang_komunal' is chosen", () => {
+    const result = applyPriorityChoice(program, "ruang_komunal");
+
+    expect(priorityOf(result, "ruang_makan_keluarga")).toBe("required");
+    expect(priorityOf(result, "kamar_tidur_utama")).toBe("flexible");
+    expect(priorityOf(result, "kamar_tidur")).toBe("flexible");
+    expect(priorityOf(result, "kamar_mandi")).toBe("flexible");
+  });
+
+  it("leaves entries outside both categories untouched regardless of choice", () => {
+    const forKamar = applyPriorityChoice(program, "kamar");
+    const forKomunal = applyPriorityChoice(program, "ruang_komunal");
+
+    expect(priorityOf(forKamar, "dapur")).toBe("required");
+    expect(priorityOf(forKamar, "carport")).toBe("required");
+    expect(priorityOf(forKomunal, "dapur")).toBe("required");
+    expect(priorityOf(forKomunal, "carport")).toBe("required");
+  });
+
+  it("does not mutate the input array", () => {
+    const original = [...program];
+    applyPriorityChoice(program, "ruang_komunal");
+
+    expect(program).toEqual(original);
   });
 });
