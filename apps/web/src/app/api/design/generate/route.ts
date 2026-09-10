@@ -13,7 +13,11 @@ const DEFAULT_BRIEF_FIELDS = {
   floors: 1,
   room_program: [] as unknown[],
   style: "minimalis_modern",
-  amenities: { pool: false, kamar_pembantu: false },
+  amenities: {
+    pool: { included: false },
+    kamar_pembantu: { included: false, with_bathroom: false },
+  },
+  prioritas_saat_tidak_muat: "kamar",
 };
 
 // The stub engine has nothing to actually time out on yet, but a hung
@@ -71,9 +75,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Passed through as-is: the engine's own `status` field ("succeeded" /
-    // "partial" / "infeasible" / "failed") is a domain-level result, not an
-    // HTTP failure, and is interpreted by the caller (see
+    // Passed through as-is: the engine's own `status` field ("success" /
+    // "partial" / "infeasible") is a domain-level result, not an HTTP
+    // failure, and is interpreted by the caller (see
     // src/app/design/new/preview/page.tsx), not here.
     const engineBody: unknown = await engineResponse.json();
     return NextResponse.json(engineBody, { status: engineResponse.status });

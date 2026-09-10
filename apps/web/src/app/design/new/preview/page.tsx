@@ -102,17 +102,13 @@ export default function PreviewPage() {
 }
 
 function GenerationResult({ data }: { data: GenerationResponse }) {
-  if (data.status === "infeasible" || data.status === "failed") {
+  if (data.status === "infeasible") {
     return (
       <div
         role="alert"
         className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-6 py-6 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100"
       >
-        <p className="font-medium">
-          {data.status === "infeasible"
-            ? "Lahan atau kebutuhan ruang belum bisa dipenuhi."
-            : "Pembuatan denah gagal."}
-        </p>
+        <p className="font-medium">Lahan atau kebutuhan ruang belum bisa dipenuhi.</p>
         <p>Coba ubah ukuran lahan, GSB, atau kebutuhan ruang, lalu buat ulang desain.</p>
       </div>
     );
@@ -132,10 +128,7 @@ function GenerationResult({ data }: { data: GenerationResponse }) {
     );
   }
 
-  // The contract has no dedicated "is this a stub" field — the stub engine
-  // signals it through the existing, loosely-typed `metadata.solver.status`
-  // (see packages/schemas/src/generation-response.ts).
-  const isStub = candidate.metadata.solver.status === "stub";
+  const isStub = candidate.metadata.engine_mode === "stub";
 
   return (
     <div className="flex flex-col gap-4">

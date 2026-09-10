@@ -13,7 +13,10 @@ const validBrief = {
   lot: validLot,
   floors: 1,
   room_program: [{ type: "kamar_tidur_utama", count: 1 }],
-  amenities: { pool: false, kamar_pembantu: false },
+  amenities: {
+    pool: { included: false },
+    kamar_pembantu: { included: false, with_bathroom: false },
+  },
   style: "minimalis_modern",
 };
 

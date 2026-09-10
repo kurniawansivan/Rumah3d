@@ -74,15 +74,34 @@ export const setbacksSchema = z.object({
   right_m: optionalPositiveMeters,
 });
 
+export const prioritySchema = z.enum(["required", "flexible"]);
+
 export const roomProgramItemSchema = z.object({
   type: roomTypeSchema,
   count: z.number().int().positive(),
+  priority: prioritySchema.default("required"),
 });
 
+export const poolPositionSchema = z.enum(["depan", "belakang", "samping", "tidak_ada_preferensi"]);
+
 export const amenitiesSchema = z.object({
-  pool: z.boolean(),
-  kamar_pembantu: z.boolean(),
+  pool: z.object({
+    included: z.boolean().default(false),
+    position_preference: poolPositionSchema.optional(),
+  }),
+  kamar_pembantu: z.object({
+    included: z.boolean().default(false),
+    with_bathroom: z.boolean().default(false),
+  }),
 });
+
+/**
+ * Step 4's single choice — protects "kamar" or "ruang_komunal" when the lot
+ * can't fit everything. The BFF translates this into a `priority` tag
+ * ("required"/"flexible") on each relevant `room_program` entry before
+ * calling the engine — see docs/hld/generation-engine-contract.md.
+ */
+export const priorityChoiceSchema = z.enum(["kamar", "ruang_komunal"]);
 
 /**
  * The `lot` + `setbacks` slice used by the step-1 ("lot data") wizard form.
@@ -103,6 +122,7 @@ export const designBriefSchema = z.object({
   room_program: z.array(roomProgramItemSchema),
   amenities: amenitiesSchema,
   style: styleSchema,
+  prioritas_saat_tidak_muat: priorityChoiceSchema.default("kamar"),
 });
 
 export type CompassDirection = z.infer<typeof compassDirectionSchema>;
@@ -111,7 +131,10 @@ export type RoomType = z.infer<typeof roomTypeSchema>;
 export type Style = z.infer<typeof styleSchema>;
 export type Lot = z.infer<typeof lotSchema>;
 export type Setbacks = z.infer<typeof setbacksSchema>;
+export type Priority = z.infer<typeof prioritySchema>;
 export type RoomProgramItem = z.infer<typeof roomProgramItemSchema>;
+export type PoolPosition = z.infer<typeof poolPositionSchema>;
 export type Amenities = z.infer<typeof amenitiesSchema>;
+export type PriorityChoice = z.infer<typeof priorityChoiceSchema>;
 export type LotStep = z.infer<typeof lotStepSchema>;
 export type DesignBrief = z.infer<typeof designBriefSchema>;
