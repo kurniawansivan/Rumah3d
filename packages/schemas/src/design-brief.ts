@@ -33,12 +33,18 @@ export const roomTypeSchema = z.enum([
   "kamar_tidur",
   "kamar_mandi",
   "dapur",
+  "dapur_bersih",
+  "dapur_kotor",
   "ruang_tamu",
   "ruang_makan",
   "ruang_keluarga",
+  "ruang_makan_keluarga",
   "carport",
+  "garasi",
   "area_servis",
   "kamar_pembantu",
+  "taman_depan",
+  "taman_belakang",
   "mushola",
 ]);
 
@@ -138,6 +144,112 @@ export const regulasiStepSchema = z
     path: ["klb_percent"],
   });
 
+export const parkirTipeSchema = z.enum(["carport", "garasi", "tidak_ada"]);
+export const konsepRuangMakanKeluargaSchema = z.enum(["terpisah", "gabung"]);
+export const dapurSchema = z.enum(["hanya_bersih", "bersih_dan_kotor"]);
+
+/**
+ * Step 3's ("program ruang") field shape — the biggest step, and the one
+ * whose fields don't map 1:1 onto `room_program`/`amenities` entries; see
+ * `buildRoomProgramFromStep3` below for the translation, and
+ * `docs/prd/floor-plan-wizard.md` Step 3's "Notes" for why it isn't 1:1
+ * (kamar tidur utama splits into two entries, dapur can split into two,
+ * ruang makan/keluarga can merge into one, kamar pembantu/pool aren't
+ * room_program entries at all).
+ */
+export const programRuangStepSchema = z
+  .object({
+    jumlah_lantai: z.coerce.number().int().min(1).max(3).default(1),
+    jumlah_kamar_tidur: z.coerce.number().int().min(1).max(6).default(3),
+    sertakan_kamar_tidur_utama: z.boolean().default(true),
+    jumlah_kamar_mandi: z.coerce.number().int().min(1).max(6).default(2),
+    parkir_tipe: parkirTipeSchema.default("carport"),
+    parkir_kapasitas_mobil: z.coerce.number().int().min(1).max(4).default(1),
+    ruang_tamu: z.boolean().default(true),
+    konsep_ruang_makan_keluarga: konsepRuangMakanKeluargaSchema.default("gabung"),
+    dapur: dapurSchema.default("hanya_bersih"),
+    sertakan_kamar_pembantu: z.boolean().default(false),
+    sertakan_km_pembantu: z.boolean().default(true),
+    sertakan_area_servis: z.boolean().default(true),
+    sertakan_kolam_renang: z.boolean().default(false),
+    posisi_kolam_renang: poolPositionSchema.default("belakang"),
+    taman_depan: z.boolean().default(true),
+    taman_belakang: z.boolean().default(true),
+    sertakan_mushola: z.boolean().default(false),
+  })
+  .refine(
+    (data) => data.jumlah_kamar_tidur > 1 || data.sertakan_kamar_tidur_utama === false,
+    {
+      message: "Kamar tidur utama tidak bisa dipilih jika jumlah kamar tidur hanya 1",
+      path: ["sertakan_kamar_tidur_utama"],
+    },
+  );
+
+/**
+ * Translates a validated Step 3 payload into the `floors`/`room_program`/
+ * `amenities` slice of `designBriefSchema` — the actual engine contract
+ * shape. Kept as a pure, independently-testable function rather than
+ * inline in the page component, since this mapping (not the form itself)
+ * is where the real risk of a wrong denah lives: a silently-dropped or
+ * miscounted room here is exactly the class of bug ADR-0010 exists to
+ * catch.
+ */
+export function buildRoomProgramFromStep3(
+  data: ProgramRuangStep,
+): Pick<DesignBrief, "floors" | "room_program" | "amenities"> {
+  const room_program: RoomProgramItem[] = [];
+  const req = (type: RoomType, count: number) =>
+    room_program.push({ type, count, priority: "required" });
+
+  if (data.sertakan_kamar_tidur_utama) {
+    req("kamar_tidur_utama", 1);
+    const remaining = data.jumlah_kamar_tidur - 1;
+    if (remaining > 0) req("kamar_tidur", remaining);
+  } else {
+    req("kamar_tidur", data.jumlah_kamar_tidur);
+  }
+
+  req("kamar_mandi", data.jumlah_kamar_mandi);
+
+  if (data.parkir_tipe !== "tidak_ada") {
+    req(data.parkir_tipe, data.parkir_kapasitas_mobil);
+  }
+
+  if (data.ruang_tamu) req("ruang_tamu", 1);
+
+  if (data.konsep_ruang_makan_keluarga === "gabung") {
+    req("ruang_makan_keluarga", 1);
+  } else {
+    req("ruang_makan", 1);
+    req("ruang_keluarga", 1);
+  }
+
+  if (data.dapur === "bersih_dan_kotor") {
+    req("dapur_bersih", 1);
+    req("dapur_kotor", 1);
+  } else {
+    req("dapur", 1);
+  }
+
+  if (data.sertakan_area_servis) req("area_servis", 1);
+  if (data.taman_depan) req("taman_depan", 1);
+  if (data.taman_belakang) req("taman_belakang", 1);
+  if (data.sertakan_mushola) req("mushola", 1);
+
+  const amenities: Amenities = {
+    pool: {
+      included: data.sertakan_kolam_renang,
+      position_preference: data.sertakan_kolam_renang ? data.posisi_kolam_renang : undefined,
+    },
+    kamar_pembantu: {
+      included: data.sertakan_kamar_pembantu,
+      with_bathroom: data.sertakan_kamar_pembantu ? data.sertakan_km_pembantu : false,
+    },
+  };
+
+  return { floors: data.jumlah_lantai, room_program, amenities };
+}
+
 export const designBriefSchema = z.object({
   lot: lotSchema,
   setbacks: setbacksSchema.optional(),
@@ -168,4 +280,8 @@ export type Amenities = z.infer<typeof amenitiesSchema>;
 export type PriorityChoice = z.infer<typeof priorityChoiceSchema>;
 export type LotStep = z.infer<typeof lotStepSchema>;
 export type RegulasiStep = z.infer<typeof regulasiStepSchema>;
+export type ParkirTipe = z.infer<typeof parkirTipeSchema>;
+export type KonsepRuangMakanKeluarga = z.infer<typeof konsepRuangMakanKeluargaSchema>;
+export type Dapur = z.infer<typeof dapurSchema>;
+export type ProgramRuangStep = z.infer<typeof programRuangStepSchema>;
 export type DesignBrief = z.infer<typeof designBriefSchema>;
