@@ -10,10 +10,6 @@ import type { GayaStep } from "@rumah3d/schemas";
 import { useWizardStore } from "@/lib/wizard/store";
 
 // TODO(shadcn/ui): see the same note in ../lot/page.tsx.
-//
-// TODO(RM-4): navigates straight to /design/new/preview once submitted,
-// since step 5 (review & generate) doesn't exist yet — point this at
-// /design/new/review once RM-4 lands.
 
 const STYLE_OPTIONS = [
   { value: "minimalis_modern", label: "Minimalis Modern" },
@@ -46,7 +42,7 @@ export default function GayaStepPage() {
   const onSubmit = (values: GayaStep) => {
     const parsed = gayaStepSchema.parse(values);
     setGaya(parsed.style, parsed.prioritas_saat_tidak_muat);
-    router.push("/design/new/preview");
+    router.push("/design/new/review");
   };
 
   return (

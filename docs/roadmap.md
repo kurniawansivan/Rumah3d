@@ -72,9 +72,19 @@ skill.
       calls the engine. Verified live end to end: lot → regulasi →
       program → gaya (changed to tropis/ruang_komunal) → preview.
       Ref: same doc, Step 4.
-- [ ] **RM-4** — Step 5: Review & Generate — summary of Steps 1–4 with
-      "Ubah" links, disclaimer, wires the _full_ brief to the BFF instead
-      of step 1's defaults-padded partial. Ref: same doc, Step 5.
+- [x] **RM-4** — Step 5: Review & Generate. Grouped summary of Steps 1–4
+      (own Indonesian label dictionary in `apps/web/src/lib/wizard/labels.ts`,
+      `Record<Enum, string>` so a schema enum change is a compile error
+      here, not a silently missing label), "Ubah" deep-links per section,
+      the disclaimer, and a submit disabled until
+      `designBriefSchema.safeParse(brief)` actually succeeds — reusing the
+      stored contract's own validation rather than a hand-rolled
+      "all steps visited" tracker, so a step whose fields are all
+      defaultable (regulasi, gaya) is correctly treated as optional while
+      lot/program (no full defaults) are correctly required. Preview still
+      owns the actual generate call, unchanged — review's submit just
+      navigates there. Verified live end to end through the full 5 steps
+      from `/`. Ref: same doc, Step 5.
 - [ ] **RM-5** — Shared wizard shell: "step N of 5" indicator, back/forward
       without losing later-step answers. Ref: same doc, "Wizard mechanics".
 

@@ -17,12 +17,12 @@ describe("GayaStepPage", () => {
     sessionStorage.clear();
   });
 
-  it("submits the defaults and navigates to preview", async () => {
+  it("submits the defaults and navigates to review", async () => {
     render(<GayaStepPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /lanjutkan/i }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/preview"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/review"));
 
     const { brief } = useWizardStore.getState();
     expect(brief.style).toBe("minimalis_modern");
@@ -40,7 +40,7 @@ describe("GayaStepPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /lanjutkan/i }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/preview"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/review"));
 
     const { brief } = useWizardStore.getState();
     expect(brief.style).toBe("tropis");
