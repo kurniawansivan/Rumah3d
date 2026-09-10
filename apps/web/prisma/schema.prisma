@@ -1,0 +1,44 @@
+// Prisma schema for the `app` logical schema of the shared Postgres
+// database. `services/generation-engine` owns the sibling `engine` schema
+// via its own Alembic migrations — never hand-edit engine.* tables from
+// here, and never add a physical foreign key across the schema boundary.
+// See docs/adr/0007-data-storage-jsonb-and-schema-ownership-boundary.md.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["app"]
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  projects Project[]
+
+  @@schema("app")
+}
+
+model Project {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  name       String
+  lotLengthM Float
+  lotWidthM  Float
+  lotPolygon Json?
+  regionCode String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@schema("app")
+}

@@ -1,0 +1,183 @@
+# Non-negotiable merge gate (see CLAUDE.md #9 and docs/adr/0010-non-negotiable-testing-gate.md).
+# `gate` is the single required status check in branch protection — every
+# other job can be added, renamed, or split without ever touching that
+# branch protection setting.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      engine: ${{ steps.filter.outputs.engine }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+              - 'turbo.json'
+            engine:
+              - 'services/generation-engine/**'
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  web-lint:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-web
+      - run: pnpm turbo run lint --filter=web --filter=@rumah3d/schemas
+
+  web-typecheck:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-web
+      - run: pnpm turbo run typecheck --filter=web --filter=@rumah3d/schemas
+
+  web-test:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-web
+      - run: pnpm turbo run test --filter=web --filter=@rumah3d/schemas
+
+  web-build:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-web
+      - run: pnpm turbo run build --filter=web
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+
+  web-e2e:
+    needs: [changes, web-build]
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-web
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+      - run: pnpm --filter web test:e2e
+
+  engine-lint:
+    needs: changes
+    if: needs.changes.outputs.engine == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/generation-engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: latest
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  engine-typecheck:
+    needs: changes
+    if: needs.changes.outputs.engine == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/generation-engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: latest
+      - run: uv sync --frozen
+      - run: uv run mypy .
+
+  engine-test:
+    needs: changes
+    if: needs.changes.outputs.engine == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/generation-engine
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rumah3d
+          POSTGRES_PASSWORD: rumah3d
+          POSTGRES_DB: rumah3d
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: latest
+      - run: uv sync --frozen
+      - run: >
+          uv run pytest
+          --cov=generation_engine --cov-report=term-missing --cov-fail-under=70 -q
+        env:
+          ENGINE_DATABASE_URL: postgresql+asyncpg://rumah3d:rumah3d@localhost:5432/rumah3d
+
+  gate:
+    if: always()
+    needs:
+      - secret-scan
+      - web-lint
+      - web-typecheck
+      - web-test
+      - web-build
+      - web-e2e
+      - engine-lint
+      - engine-typecheck
+      - engine-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: All required checks passed (or were correctly skipped)
+        run: |
+          results='${{ join(needs.*.result, ' ') }}'
+          echo "Job results: $results"
+          for r in $results; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
+              echo "A required job did not succeed: $r"
+              exit 1
+            fi
+          done

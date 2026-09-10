@@ -1,0 +1,35 @@
+# Local development only. Deployed/preview environments use a managed
+# Postgres (Neon) instead — see docs/adr/0011-docker-compose-for-local-database-only.md.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: rumah3d
+      POSTGRES_PASSWORD: rumah3d
+      POSTGRES_DB: rumah3d
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rumah3d"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  generation-engine:
+    build:
+      context: ./services/generation-engine
+    ports:
+      - "8000:8000"
+    environment:
+      ENGINE_DATABASE_URL: postgresql+asyncpg://rumah3d:rumah3d@postgres:5432/rumah3d
+      LOG_LEVEL: debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./services/generation-engine/src:/app/src
+
+volumes:
+  postgres-data:

@@ -1,0 +1,4 @@
+{
+  "extends": "@rumah3d/typescript-config/base.json",
+  "include": ["src"]
+}

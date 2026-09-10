@@ -1,0 +1,9 @@
+{
+  "name": "generation-engine",
+  "private": true,
+  "scripts": {
+    "lint": "uv run ruff check . && uv run ruff format --check .",
+    "typecheck": "uv run mypy .",
+    "test": "uv run pytest --cov=generation_engine --cov-report=term-missing --cov-fail-under=70 -q"
+  }
+}

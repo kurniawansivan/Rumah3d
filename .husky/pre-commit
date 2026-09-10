@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+# Local backstop only — CI's secret-scan job (gitleaks-action) is the
+# authoritative check and runs regardless of whether gitleaks is installed
+# locally.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact -v
+fi
+
+pnpm exec lint-staged

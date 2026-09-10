@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "services/*"
+  - "packages/*"
+
+# Packages that want to run install-time scripts must be allow-listed here
+# (pnpm blocks arbitrary postinstall scripts by default for supply-chain safety).
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

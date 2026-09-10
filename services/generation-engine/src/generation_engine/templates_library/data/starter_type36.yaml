@@ -1,0 +1,20 @@
+code: type36_1lt_2kt1km
+name: "Tipe 36 - 1 Lantai - 2 Kamar Tidur, 1 Kamar Mandi"
+floors_min: 1
+floors_max: 1
+min_lot_length_m: 10
+min_lot_width_m: 6
+style_tags: [minimalis_modern]
+room_program_fit:
+  kamar_tidur: [1, 2]
+  kamar_mandi: [1, 1]
+  ruang_tamu: [1, 1]
+  dapur: [1, 1]
+  carport: [0, 1]
+zoning_graph:
+  nodes: [carport, ruang_tamu, ruang_makan, dapur, kamar_tidur_utama, kamar_tidur, kamar_mandi]
+  edges:
+    - [carport, ruang_tamu]
+    - [ruang_tamu, ruang_makan]
+    - [ruang_makan, dapur]
+    - [kamar_tidur_utama, kamar_mandi]
