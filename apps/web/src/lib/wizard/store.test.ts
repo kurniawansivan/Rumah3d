@@ -28,23 +28,33 @@ describe("useWizardStore", () => {
     expect(useWizardStore.getState().brief).toEqual({});
   });
 
-  it("setLot stores the lot and setbacks slice", () => {
-    useWizardStore.getState().setLot(sampleLot, sampleSetbacks);
-
-    const { brief } = useWizardStore.getState();
-    expect(brief.lot).toEqual(sampleLot);
-    expect(brief.setbacks).toEqual(sampleSetbacks);
-  });
-
-  it("setLot works without setbacks", () => {
+  it("setLot stores the lot slice", () => {
     useWizardStore.getState().setLot(sampleLot);
 
     expect(useWizardStore.getState().brief.lot).toEqual(sampleLot);
-    expect(useWizardStore.getState().brief.setbacks).toBeUndefined();
+  });
+
+  it("setRegulasi stores setbacks, kdb_percent and klb_percent", () => {
+    useWizardStore.getState().setRegulasi(sampleSetbacks, 60, 120);
+
+    const { brief } = useWizardStore.getState();
+    expect(brief.setbacks).toEqual(sampleSetbacks);
+    expect(brief.kdb_percent).toBe(60);
+    expect(brief.klb_percent).toBe(120);
+  });
+
+  it("setRegulasi works without setbacks or klb_percent", () => {
+    useWizardStore.getState().setRegulasi(undefined, 60);
+
+    const { brief } = useWizardStore.getState();
+    expect(brief.setbacks).toBeUndefined();
+    expect(brief.kdb_percent).toBe(60);
+    expect(brief.klb_percent).toBeUndefined();
   });
 
   it("reset clears back to an empty brief", () => {
-    useWizardStore.getState().setLot(sampleLot, sampleSetbacks);
+    useWizardStore.getState().setLot(sampleLot);
+    useWizardStore.getState().setRegulasi(sampleSetbacks, 60, 120);
     useWizardStore.getState().reset();
 
     expect(useWizardStore.getState().brief).toEqual({});

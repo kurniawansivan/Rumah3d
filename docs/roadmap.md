@@ -44,7 +44,13 @@ a schema that already exists, not new schema design. Pattern to follow:
 `apps/web/src/app/design/new/lot/page.tsx` (step 1) + the `new-wizard-step`
 skill.
 
-- [ ] **RM-1** — Step 2: Batasan Regulasi (GSB/KDB/KLB form).
+- [x] **RM-1** — Step 2: Batasan Regulasi (GSB/KDB/KLB form). Also moved
+      GSB fields out of step 1 (they'd been folded in there during the
+      walking-skeleton pass, ahead of the PRD's actual 5-step split), and
+      fixed `kdb_percent`/`klb_percent` bounds (`min(10)`, and `klb` up to
+      300 since it's cumulative across floors, not capped at 100 like
+      `kdb`). Verified live: lot → regulasi → preview renders a room sized
+      to the real GSB values, not the engine's hardcoded defaults.
       Ref: [`docs/prd/floor-plan-wizard.md`](prd/floor-plan-wizard.md) Step 2.
 - [ ] **RM-2** — Step 3: Program Ruang (room program + amenities form —
       the biggest step, ~15 fields). Ref: same doc, Step 3.

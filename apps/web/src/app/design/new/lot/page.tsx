@@ -20,8 +20,8 @@ import { useWizardStore } from "@/lib/wizard/store";
 // `defaultValues` — with both `resolver` and a partial `defaultValues`
 // given, TS's inference converges on defaultValues' narrower literal shape
 // and silently drops fields the resolver actually requires (length_m,
-// width_m, setbacks). LotStep (z.infer<typeof lotStepSchema>) stays the one
-// source of truth for the full field shape either way.
+// width_m). LotStep (z.infer<typeof lotStepSchema>) stays the one source
+// of truth for the full field shape either way.
 
 const FACING_OPTIONS: Array<{ value: CompassDirection; label: string }> = [
   { value: "utara", label: "Utara" },
@@ -61,18 +61,20 @@ export default function LotStepPage() {
     },
   });
 
-  const onSubmit = (values: { lot: unknown; setbacks?: unknown }) => {
-    // Re-validate through the schema so `lot`/`setbacks` are the fully
-    // parsed shape (setbacks coerced/cleaned) regardless of exactly what
-    // react-hook-form's resolver handed back.
+  const onSubmit = (values: { lot: unknown }) => {
+    // Re-validate through the schema so `lot` is the fully parsed shape
+    // regardless of exactly what react-hook-form's resolver handed back.
     const parsed = lotStepSchema.parse(values);
-    setLot(parsed.lot, parsed.setbacks);
-    router.push("/design/new/preview");
+    setLot(parsed.lot);
+    router.push("/design/new/regulasi");
   };
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-8 px-6 py-16">
       <div className="flex flex-col gap-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          Langkah 1 dari 5
+        </p>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           Data Lahan
         </h1>
@@ -170,90 +172,6 @@ export default function LotStepPage() {
             <p className="text-xs text-red-600">{errors.lot.position.message}</p>
           ) : null}
         </div>
-
-        <fieldset className="flex flex-col gap-3 rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
-          <legend className="px-1 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-            Garis sempadan bangunan (GSB) — opsional
-          </legend>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Jarak minimum bangunan dari batas lahan, dalam meter. Kosongkan jika belum tahu.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="setbacks.front_m"
-                className="text-sm text-zinc-700 dark:text-zinc-300"
-              >
-                Depan (m)
-              </label>
-              <input
-                id="setbacks.front_m"
-                type="number"
-                step="0.1"
-                inputMode="decimal"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                {...register("setbacks.front_m", { valueAsNumber: true })}
-              />
-              {errors.setbacks?.front_m ? (
-                <p className="text-xs text-red-600">{errors.setbacks.front_m.message}</p>
-              ) : null}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="setbacks.back_m" className="text-sm text-zinc-700 dark:text-zinc-300">
-                Belakang (m)
-              </label>
-              <input
-                id="setbacks.back_m"
-                type="number"
-                step="0.1"
-                inputMode="decimal"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                {...register("setbacks.back_m", { valueAsNumber: true })}
-              />
-              {errors.setbacks?.back_m ? (
-                <p className="text-xs text-red-600">{errors.setbacks.back_m.message}</p>
-              ) : null}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="setbacks.left_m" className="text-sm text-zinc-700 dark:text-zinc-300">
-                Kiri (m)
-              </label>
-              <input
-                id="setbacks.left_m"
-                type="number"
-                step="0.1"
-                inputMode="decimal"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                {...register("setbacks.left_m", { valueAsNumber: true })}
-              />
-              {errors.setbacks?.left_m ? (
-                <p className="text-xs text-red-600">{errors.setbacks.left_m.message}</p>
-              ) : null}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="setbacks.right_m"
-                className="text-sm text-zinc-700 dark:text-zinc-300"
-              >
-                Kanan (m)
-              </label>
-              <input
-                id="setbacks.right_m"
-                type="number"
-                step="0.1"
-                inputMode="decimal"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                {...register("setbacks.right_m", { valueAsNumber: true })}
-              />
-              {errors.setbacks?.right_m ? (
-                <p className="text-xs text-red-600">{errors.setbacks.right_m.message}</p>
-              ) : null}
-            </div>
-          </div>
-        </fieldset>
 
         <button
           type="submit"

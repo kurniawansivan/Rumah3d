@@ -27,14 +27,14 @@ describe("LotStepPage", () => {
     expect(screen.getByRole("button", { name: /lanjutkan/i })).toBeInTheDocument();
   });
 
-  it("submits valid lot data, stores it, and navigates to the preview step", async () => {
+  it("submits valid lot data, stores it, and navigates to the regulasi step", async () => {
     render(<LotStepPage />);
 
     fireEvent.change(screen.getByLabelText(/lebar lahan/i), { target: { value: "8" } });
     fireEvent.change(screen.getByLabelText(/panjang lahan/i), { target: { value: "10" } });
     fireEvent.click(screen.getByRole("button", { name: /lanjutkan/i }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/preview"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/design/new/regulasi"));
 
     const { brief } = useWizardStore.getState();
     expect(brief.lot).toMatchObject({
