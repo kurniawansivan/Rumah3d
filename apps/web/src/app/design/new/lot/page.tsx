@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { lotStepSchema } from "@rumah3d/schemas";
-import type { CompassDirection, LotPosition } from "@rumah3d/schemas";
+import type { CompassDirection, LotPosition, LotStep } from "@rumah3d/schemas";
 
 import { useWizardStore } from "@/lib/wizard/store";
 
@@ -16,10 +16,12 @@ import { useWizardStore } from "@/lib/wizard/store";
 // (no installs/scaffolding). Swap these plain elements for the real
 // shadcn/ui components once `pnpm dlx shadcn@latest add ...` can run again.
 //
-// The form's field-values type is deliberately NOT hand-written here:
-// `useForm` infers it straight from `zodResolver(lotStepSchema)` (and the
-// `defaultValues` shape below), so there's exactly one source of truth for
-// what this form's data looks like — the schema itself.
+// `useForm<LotStep>` is explicit rather than left to infer from
+// `defaultValues` — with both `resolver` and a partial `defaultValues`
+// given, TS's inference converges on defaultValues' narrower literal shape
+// and silently drops fields the resolver actually requires (length_m,
+// width_m, setbacks). LotStep (z.infer<typeof lotStepSchema>) stays the one
+// source of truth for the full field shape either way.
 
 const FACING_OPTIONS: Array<{ value: CompassDirection; label: string }> = [
   { value: "utara", label: "Utara" },
@@ -45,7 +47,7 @@ export default function LotStepPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({
+  } = useForm<LotStep>({
     resolver: zodResolver(lotStepSchema),
     // Only fields with a genuine default are listed — `defaultValues` is a
     // deep-partial, so `length_m`/`width_m`/the setback fields are simply

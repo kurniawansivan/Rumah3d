@@ -55,11 +55,20 @@ export async function POST(request: NextRequest) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), ENGINE_REQUEST_TIMEOUT_MS);
 
+  // The engine requires a `project_id` (it's the FK the DB layer eventually
+  // ties a generation request back to a real `app.projects` row) — but
+  // there's no project-creation flow or auth wired up yet, so
+  // `designBriefSchema` deliberately doesn't have this field at all (it
+  // isn't something the wizard collects). Generate a placeholder until a
+  // real project is created earlier in the flow and its id threaded
+  // through here instead.
+  const enginePayload = { ...parsed.data, project_id: crypto.randomUUID() };
+
   try {
     const engineResponse = await fetch(`${engineUrl}/v1/designs/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(enginePayload),
       signal: controller.signal,
     });
 

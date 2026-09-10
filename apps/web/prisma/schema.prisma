@@ -5,8 +5,7 @@
 // See docs/adr/0007-data-storage-jsonb-and-schema-ownership-boundary.md.
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
