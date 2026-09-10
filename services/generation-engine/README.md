@@ -30,6 +30,11 @@ touching `engine/` without a corresponding property test is incomplete.
 
 ## Run it later
 
+Day to day, this service runs via `docker compose up -d` from the repo
+root (see root `README.md`) — its container already reloads on save. Run
+it directly with `uv` only when debugging the engine in isolation, outside
+Docker:
+
 ```bash
 uv sync
 uv run alembic upgrade head

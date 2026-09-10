@@ -20,6 +20,23 @@ services:
   generation-engine:
     build:
       context: ./services/generation-engine
+    # Dev-only override — the Dockerfile's own CMD has no --reload (that's
+    # a dev-only flag, not something a deployed container should run with).
+    # This is what actually makes the src/ bind-mount below useful day to
+    # day: without it, a Python code change needs a manual container
+    # restart to take effect.
+    command:
+      [
+        "uvicorn",
+        "generation_engine.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+        "--reload-dir",
+        "/app/src",
+      ]
     ports:
       - "8000:8000"
     environment:
