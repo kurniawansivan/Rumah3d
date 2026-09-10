@@ -1,6 +1,6 @@
 {
-  "apps/web/**/*.{ts,tsx,js,jsx}": ["eslint --fix"],
-  "packages/*/src/**/*.{ts,tsx}": ["eslint --fix"],
+  "apps/web/**/*.{ts,tsx,js,jsx}": ["pnpm --filter web exec eslint --fix --"],
+  "packages/schemas/src/**/*.{ts,tsx}": ["pnpm --filter @rumah3d/schemas exec eslint --fix --"],
   "**/*.{json,md,yml,yaml}": ["prettier --write --ignore-unknown"],
   "services/generation-engine/**/*.py": [
     "uv run --project services/generation-engine ruff check --fix",
