@@ -102,7 +102,7 @@ jobs:
         working-directory: services/generation-engine
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v7
         with:
           version: latest
       - run: uv sync --frozen
@@ -118,7 +118,7 @@ jobs:
         working-directory: services/generation-engine
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v7
         with:
           version: latest
       - run: uv sync --frozen
@@ -147,7 +147,7 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v7
         with:
           version: latest
       - run: uv sync --frozen
